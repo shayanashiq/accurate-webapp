@@ -5,7 +5,7 @@ import {
 } from '@/constants';
 import getDomain from '../utils/getDomain';
 import { generateToken } from './token';
-import { send } from './gmail';
+import { send } from './mailjet';
 
 export const sendForgetPasswordEmail = async (email: string) => {
   const text = `
