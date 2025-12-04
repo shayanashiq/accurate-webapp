@@ -29,7 +29,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "components/OtpVerification",
-    "app/otp-verification"
+    "app/auth/otp-verification"
   ],
   "exclude": ["node_modules"]
 }
