@@ -1,3 +1,4 @@
+//app/api/accurate/customer/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { accurateFetch } from '@/lib/accurate';
 
