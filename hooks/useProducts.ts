@@ -1,20 +1,50 @@
-// hooks/useProducts.ts
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'; 
+// hooks/useProducts.ts (with caching)
+import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 
-async function fetchProducts(page: number = 1, search?: string) {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: '5',
+interface PaginationParams {
+  page: number;
+  limit: number;
+  offset?: number;
+}
+
+async function fetchProducts(params: PaginationParams, search?: string) {
+  const urlParams = new URLSearchParams({
+    page: params.page.toString(),
+    limit: params.limit.toString(),
   });
 
   if (search) {
-    params.append('search', search);
+    urlParams.append('search', search);
   }
 
-  const res = await fetch(`/api/accurate/products?${params.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch products');
+  const res = await fetch(`/api/accurate/products?${urlParams.toString()}`);
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch products');
+  }
+
   return res.json();
+}
+
+export function useProducts(
+  searchTerm: string = '',
+  paginationParams: PaginationParams
+) {
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  return useQuery({
+    queryKey: [
+      'products',
+      debouncedSearch,
+      paginationParams.page,
+      paginationParams.limit,
+    ],
+    queryFn: () => fetchProducts(paginationParams, debouncedSearch),
+    placeholderData: (previousData) => previousData,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+  });
 }
 
 async function fetchProductDetail(id: string) {
@@ -22,27 +52,11 @@ async function fetchProductDetail(id: string) {
   if (!res.ok) throw new Error('Failed to fetch product detail');
   return res.json();
 }
-
-export function useProducts(searchTerm: string = '') {
-  const debouncedSearch = useDebounce(searchTerm, 500);
-
-  return useInfiniteQuery({
-    queryKey: ['products', debouncedSearch],
-    queryFn: ({ pageParam = 1 }) => fetchProducts(pageParam, debouncedSearch),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pagination?.page < lastPage.pagination?.pageCount) {
-        return lastPage.pagination.page + 1;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-  });
-}
-
 export function useProductDetail(id: string) {
   return useQuery({
     queryKey: ['product', id],
     queryFn: () => fetchProductDetail(id),
     enabled: !!id,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }
