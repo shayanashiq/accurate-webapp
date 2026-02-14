@@ -26,7 +26,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   };
 
   const isOutOfStock = product.availableToSell === 0;
-
+console.log(product.image, "product.image")
   return (
     <Card className={cn(
       "group relative overflow-hidden transition-all hover:shadow-lg",

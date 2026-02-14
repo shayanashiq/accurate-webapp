@@ -1,7 +1,7 @@
 // view/products/product-detail.tsx
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useProductDetail } from '@/hooks/useProducts';
@@ -23,7 +23,11 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ProductDetail({ product, isLoading, error, success }: any) {
+export default function ProductDetail() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') as string;
+  const { data, isLoading, error } = useProductDetail(id);
+  const product = data?.data;
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -32,7 +36,7 @@ export default function ProductDetail({ product, isLoading, error, success }: an
     return <ProductDetailSkeleton />;
   }
 
-  if (error || !success) {
+  if (error) {
     return (
       <div className="py-16 text-center">
         <h2 className="text-2xl font-bold">Product not found</h2>
@@ -46,7 +50,7 @@ export default function ProductDetail({ product, isLoading, error, success }: an
       </div>
     );
   }
- 
+
   const images = product.images || [];
   const mainImage =
     images[selectedImage]?.thumbnailPath || product.imageUrlThumb;
