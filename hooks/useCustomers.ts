@@ -1,6 +1,19 @@
 // hooks/useCustomers.ts
 import { useMutation } from '@tanstack/react-query';
-import { CustomerFormData } from '@/types';
+import { queryClient } from '@/components/ReactQueryProvider';
+
+interface CustomerFormData {
+  name: string;
+  transDate: string;
+  customerNo?: string;
+  mobilePhone?: string;
+  email?: string;
+  billStreet?: string;
+  billCity?: string;
+  billProvince?: string;
+  billCountry?: string;
+  billZipCode?: string;
+}
 
 async function createCustomer(customerData: CustomerFormData) {
   const res = await fetch('/api/accurate/customer/create', {
@@ -8,12 +21,21 @@ async function createCustomer(customerData: CustomerFormData) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(customerData),
   });
-  if (!res.ok) throw new Error('Failed to create customer');
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to create customer');
+  }
+  
   return res.json();
 }
 
 export function useCreateCustomer() {
   return useMutation({
     mutationFn: createCustomer,
+    onSuccess: (data) => {
+      console.log('✅ Customer created:', data.customer);
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    },
   });
 }

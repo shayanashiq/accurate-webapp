@@ -72,14 +72,6 @@ export function Footer() {
                   Orders
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/profile"
-                  className="text-sm text-muted-foreground hover:text-primary"
-                >
-                  Profile
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -150,7 +142,7 @@ export function Footer() {
           </div>
         </div>
       </Maxwidth>
-       <div className='w-full h-px bg-border my-12'></div>
+      <div className="w-full h-px bg-border my-12"></div>
       <Maxwidth className="">
         <p className="text-center text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} {siteConfig.name}. All rights

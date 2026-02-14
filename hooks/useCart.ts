@@ -1,6 +1,6 @@
 // hooks/useCart.ts
 import { useCartStore } from '@/store/cartStore';
-import { Product } from '@/types';
+import { CartItem, Product } from '@/types';
 import { useMemo } from 'react';
 
 export function useCart() {
@@ -15,22 +15,24 @@ export function useCart() {
     getTotal,
   } = useCartStore();
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    addItem({
-      id: crypto.randomUUID(),
-      productId: product.id,
+  const addToCart = (product: Product, quantity: number = 1) => { 
+    const cartItem: CartItem = {
+      id: crypto.randomUUID(), // Cart item ka unique ID
+      productId: product.id, // ✅ Product ka ID (string)
       productNo: product.no,
       name: product.name,
-      price: product.unitPrice,
+      price: Number(product.unitPrice) || 0,
       quantity,
       image: product.imageUrlThumb,
       maxQuantity: product.availableToSell,
-    });
+    };
+    console.log(cartItem, "cartItemcheckprice")
+    addItem(cartItem);
   };
 
-  const cartCount = useMemo(() => getTotalItems(), [items, getTotalItems]);
-  const subtotal = useMemo(() => getSubtotal(), [items, getSubtotal]);
-  const total = useMemo(() => getTotal(), [items, getTotal]);
+  const cartCount = useMemo(() => getTotalItems(), [items]);
+  const subtotal = useMemo(() => getSubtotal(), [items]);
+  const total = useMemo(() => getTotal(), [items]);
 
   return {
     items,

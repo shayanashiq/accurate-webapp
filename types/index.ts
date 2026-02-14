@@ -1,15 +1,39 @@
 // types/index.ts
+// ============================================
+// API Response Types
+// ============================================
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  count?: number;
+  totalCount?: number;
+  page?: number;
+  pageSize?: number;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    pageCount: number;
+    rowCount: number;
+  };
+}
+
+// ============================================
+// Product Types
+// ============================================
+
 export interface Product {
-  id: string;
-  no: string;
-  name: string;
-  itemType: string;
-  unitPrice: number;
-  unit1Name: string;
-  category: any;
+  id: number | string;           // ✅ Product ID
+  no: string;                     // ✅ Product Number
+  name: string;                   // ✅ Product Name
+  itemType: string;               // ✅ Item Type
+  unitPrice: number;              // ✅ Price
+  unit1Name?: string;             // ✅ Unit Name
+  category?: any;
   image?: string;
-  imageUrlThumb?: string;
-  availableToSell?: number;
+  imageUrlThumb?: string;         // ✅ Thumbnail Image
+  availableToSell?: number;       // ✅ Stock
   minimumSellingQuantity?: number;
 }
 
@@ -34,7 +58,7 @@ export interface ProductDetail extends Product {
   suspended: boolean;
   onSales: number;
   notes?: string;
-  images: ProductImage[];
+  images: ProductImage[];          // ✅ Product Images Array
   sellingPrices: SellingPrice[];
   warehouses: Warehouse[];
   upcNo?: string;
@@ -49,9 +73,9 @@ export interface ProductDetail extends Product {
 }
 
 export interface ProductImage {
-  id: string | null;
-  fileName: string | null;
-  thumbnailPath: string | null;
+  id: number | string | null;      // ✅ Image ID
+  fileName: string | null;         // ✅ Full Image URL
+  thumbnailPath: string | null;    // ✅ Thumbnail URL
   originalName: string | null;
   seq: number;
 }
@@ -92,16 +116,24 @@ export interface Warehouse {
   unit1Quantity: number;
 }
 
+// ============================================
+// Cart Types
+// ============================================
+
 export interface CartItem {
-  id: string;
-  productId: string;
-  productNo: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  maxQuantity?: number;
+  id: string;                      // ✅ Cart Item Unique ID (crypto.randomUUID)
+  productId: number | string;       // ✅ Product ID (from product.id)
+  productNo: string;                // ✅ Product Number (from product.no)
+  name: string;                     // ✅ Product Name
+  price: number;                    // ✅ Price (from product.unitPrice)
+  quantity: number;                 // ✅ Quantity
+  image?: string | null;            // ✅ Image URL (thumbnail or main)
+  maxQuantity?: number;             // ✅ Max Available Stock
 }
+
+// ============================================
+// Customer Types
+// ============================================
 
 export interface Customer {
   id: string | null;
@@ -125,6 +157,23 @@ export interface Customer {
   balance: number;
 }
 
+export interface CustomerFormData {
+  name: string;
+  transDate: string;
+  customerNo?: string;
+  mobilePhone?: string;
+  email?: string;
+  billStreet?: string;
+  billCity?: string;
+  billProvince?: string;
+  billCountry?: string;
+  billZipCode?: string;
+}
+
+// ============================================
+// Order Types
+// ============================================
+
 export interface Order {
   id: string;
   number: string;
@@ -136,6 +185,7 @@ export interface Order {
   };
   total: number;
   status: string;
+  items?: OrderItem[];
 }
 
 export interface OrderDetail {
@@ -193,30 +243,4 @@ export interface OrderItem {
   totalPrice: number;
   unit?: string;
   notes?: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  count?: number;
-  pagination?: {
-    page: number;
-    pageSize: number;
-    pageCount: number;
-    rowCount: number;
-  };
-}
-
-export interface CustomerFormData {
-  name: string;
-  transDate: string;
-  customerNo?: string;
-  mobilePhone?: string;
-  email?: string;
-  billStreet?: string;
-  billCity?: string;
-  billProvince?: string;
-  billCountry?: string;
-  billZipCode?: string;
 }

@@ -1,71 +1,45 @@
-// hooks/useOrders.ts
-import { useQuery, useMutation } from '@tanstack/react-query';
+// hooks/useOrders.ts (add this mutation)
 import { queryClient } from '@/components/ReactQueryProvider';
+import { useMutation } from '@tanstack/react-query';
 
-async function fetchOrders(params: any) {
-  const urlParams = new URLSearchParams({
-    page: params.page.toString(),
-    pageSize: params.pageSize.toString(),
-  });
-
-  if (params.customerId) {
-    urlParams.append('customerId', params.customerId);
-  }
-
-  const res = await fetch(`/api/accurate/orders?${urlParams.toString()}`);
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || 'Failed to fetch orders');
-  }
-
-  return res.json();
+interface OrderItem {
+  itemNo: string;
+  quantity: number;
+  unitPrice?: number;
+  discount?: number;
+  detailNotes?: string;
 }
 
-async function fetchOrderDetail(id: string) {
-  const res = await fetch(`/api/accurate/orders/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch order detail');
-  return res.json();
+interface CreateOrderData {
+  customerNo: string;
+  transDate?: string;
+  items: OrderItem[];
+  description?: string;
+  detailMemo?: string;
+  branchNo?: string;
+  warehouseNo?: string;
 }
 
-async function createOrder(orderData: any) {
+async function createOrder(orderData: CreateOrderData) {
   const res = await fetch('/api/accurate/orders/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(orderData),
   });
-  if (!res.ok) throw new Error('Failed to create order');
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to create order');
+  }
+  
   return res.json();
-}
-
-export function useOrders(paginationParams: any, filters: any) {
-  return useQuery({
-    queryKey: [
-      'orders',
-      paginationParams.page,
-      paginationParams.pageSize,
-      filters,
-    ],
-    queryFn: () => fetchOrders({ ...paginationParams, ...filters }),
-    placeholderData: (previousData) => previousData, // Smooth pagination
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-}
-
-export function useOrderDetail(id: string) {
-  return useQuery({
-    queryKey: ['order', id],
-    queryFn: () => fetchOrderDetail(id),
-    enabled: !!id,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
 }
 
 export function useCreateOrder() {
   return useMutation({
     mutationFn: createOrder,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ Order created:', data.data);
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });

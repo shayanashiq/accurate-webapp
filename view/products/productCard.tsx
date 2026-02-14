@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -20,13 +21,7 @@ export function ProductCard({
   product,
   variant = 'default',
 }: ProductCardProps) {
-  const { addToCart } = useCart();
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product, 1);
-  };
+  const router = useRouter();
 
   const isOutOfStock = product.availableToSell === 0;
   console.log(product.image, 'product.image');
@@ -93,20 +88,13 @@ export function ProductCard({
             size="sm"
             variant="outline"
             className="flex-1"
-            onClick={handleAddToCart}
+            onClick={() => router.push(`/product-detail?id=${product.id}`)}
             disabled={isOutOfStock}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
             Add to Cart
           </Button>
-          <Button size="sm" variant="ghost" className="px-3" asChild>
-            <Link
-              href={`/product-detail?id=${product.id}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
+        
         </div>
       </CardFooter>
     </Card>

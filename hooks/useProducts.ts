@@ -1,4 +1,4 @@
-// hooks/useProducts.ts (with caching)
+// hooks/useProducts.ts
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -43,7 +43,7 @@ export function useProducts(
     queryFn: () => fetchProducts(paginationParams, debouncedSearch),
     placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 
@@ -52,11 +52,12 @@ async function fetchProductDetail(id: string) {
   if (!res.ok) throw new Error('Failed to fetch product detail');
   return res.json();
 }
+
 export function useProductDetail(id: string) {
   return useQuery({
     queryKey: ['product', id],
     queryFn: () => fetchProductDetail(id),
     enabled: !!id,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000,
   });
 }

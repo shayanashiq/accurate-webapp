@@ -22,15 +22,18 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Maxwidth from '@/components/Maxwidth';
 
 export default function ProductDetail() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id') as string;
   const { data, isLoading, error } = useProductDetail(id);
-  const product = data?.data;
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  const product = data?.data;
+  console.log(product, 'product');
 
   if (isLoading) {
     return <ProductDetailSkeleton />;
@@ -51,31 +54,30 @@ export default function ProductDetail() {
     );
   }
 
-  const images = product.images || [];
-  const mainImage =
-    images[selectedImage]?.thumbnailPath || product.imageUrlThumb;
+  const images = product?.images || [];
+  const mainImage = images[selectedImage]?.fileName || product.fileName;
+  console.log(mainImage, 'mainImage');
 
+  console.log(product.unitPrice, "product.unitPrice")
   const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      productId: product.id,
-      productNo: product.no,
-      name: product.name,
-      price: product.unitPrice,
-      quantity,
-      image: mainImage,
-      maxQuantity: product.availableToSell,
-    });
+    addToCart(
+      {
+        id: product.id, // ✅ number|string
+        no: product.no, // ✅ string
+        name: product.name,
+        unitPrice: product.unitPrice, // ✅ number
+        imageUrlThumb: mainImage,
+        availableToSell: product.availableToSell,
+      } as any,
+      quantity
+    ); // ✅ Type assertion as Product
   };
 
   return (
-    <div className="py-8 space-y-8">
+    <Maxwidth className="py-8 space-y-8 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="flex text-sm text-muted-foreground">
-        <a href="/" className="hover:text-primary">
-          Home
-        </a>
-        <span className="mx-2">/</span>
+        {/* <span className="mx-2">/</span> */}
         <a href="/" className="hover:text-primary">
           Products
         </a>
@@ -142,9 +144,9 @@ export default function ProductDetail() {
             <span className="text-4xl font-bold">
               ${product.unitPrice.toFixed(2)}
             </span>
-            <span className="text-muted-foreground">
+            {/* <span className="text-muted-foreground">
               per {product.unit1Name}
-            </span>
+            </span> */}
           </div>
 
           <div className="flex items-center gap-2">
@@ -208,9 +210,10 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            <Button
+            <div className=''>
+              <Button
               size="lg"
-              className="w-full"
+              className="w-full "
               onClick={handleAddToCart}
               disabled={
                 !product.availableToSell || product.availableToSell === 0
@@ -219,6 +222,7 @@ export default function ProductDetail() {
               <ShoppingCart className="mr-2 h-5 w-5" />
               Add to Cart
             </Button>
+            </div>
           </div>
 
           {/* Features */}
@@ -237,65 +241,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <Separator />
-
-          {/* Product Details Tabs */}
-          <Tabs defaultValue="description" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="specifications">Specifications</TabsTrigger>
-              <TabsTrigger value="shipping">Shipping</TabsTrigger>
-            </TabsList>
-            <TabsContent value="description" className="pt-4">
-              <p className="text-muted-foreground">
-                {product.notes || 'No description available.'}
-              </p>
-            </TabsContent>
-            <TabsContent value="specifications" className="pt-4">
-              <dl className="grid grid-cols-2 gap-2 text-sm">
-                <dt className="font-medium">Item Type:</dt>
-                <dd className="text-muted-foreground">
-                  {product.itemTypeName || product.itemType}
-                </dd>
-
-                <dt className="font-medium">Category:</dt>
-                <dd className="text-muted-foreground">
-                  {product.itemCategory?.name || 'Uncategorized'}
-                </dd>
-
-                <dt className="font-medium">Weight:</dt>
-                <dd className="text-muted-foreground">
-                  {product.weight > 0 ? `${product.weight} kg` : 'N/A'}
-                </dd>
-
-                <dt className="font-medium">Dimensions:</dt>
-                <dd className="text-muted-foreground">
-                  {product.dimensions.width > 0
-                    ? `${product.dimensions.width} x ${product.dimensions.height} x ${product.dimensions.depth} cm`
-                    : 'N/A'}
-                </dd>
-
-                <dt className="font-medium">UPC:</dt>
-                <dd className="text-muted-foreground">
-                  {product.upcNo || 'N/A'}
-                </dd>
-              </dl>
-            </TabsContent>
-            <TabsContent value="shipping" className="pt-4">
-              <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  Free shipping on all orders over $50. Orders typically ship
-                  within 1-2 business days.
-                </p>
-                <p>
-                  Standard delivery: 3-5 business days
-                  <br />
-                  Express delivery: 1-2 business days
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
-
+          <Separator /> 
           {/* Warehouse Stock */}
           {product.warehouses && product.warehouses.length > 0 && (
             <Card>
@@ -321,7 +267,7 @@ export default function ProductDetail() {
           )}
         </div>
       </div>
-    </div>
+    </Maxwidth>
   );
 }
 

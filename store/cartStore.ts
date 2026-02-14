@@ -1,6 +1,6 @@
 // store/cartStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware'; 
+import { persist } from 'zustand/middleware';
 
 interface CartStore {
   items: any[];
@@ -56,7 +56,10 @@ export const useCartStore = create<CartStore>()(
           set({
             items: items.map((item) =>
               item.productId === productId
-                ? { ...item, quantity: Math.min(quantity, item.maxQuantity || Infinity) }
+                ? {
+                    ...item,
+                    quantity: Math.min(quantity, item.maxQuantity || Infinity),
+                  }
                 : item
             ),
           });
@@ -72,13 +75,16 @@ export const useCartStore = create<CartStore>()(
 
       getSubtotal: () => {
         const { items } = get();
-        return items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return items.reduce((total, item) => {
+          const price = item.price || 0; // ✅ Fallback
+          const quantity = item.quantity || 0; // ✅ Fallback
+          return total + price * quantity;
+        }, 0);
       },
 
       getTotal: () => {
         const { getSubtotal } = get();
-        // Add tax, shipping, etc. here
-        return getSubtotal();
+        return getSubtotal(); // Add tax/shipping here if needed
       },
     }),
     {

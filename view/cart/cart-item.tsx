@@ -4,15 +4,11 @@
 import Image from 'next/image';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CartItem as CartItemType } from '@/types';
+import { Input } from '@/components/ui/input'; 
 import { useCart } from '@/hooks/useCart';
+ 
 
-interface CartItemProps {
-  item: CartItemType;
-}
-
-export function CartItem({ item }: CartItemProps) {
+export function CartItem({ item }: any) {
   const { updateQuantity, removeItem } = useCart();
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -49,7 +45,7 @@ export function CartItem({ item }: CartItemProps) {
           <div>
             <h4 className="text-sm font-medium line-clamp-2">{item.name}</h4>
             <p className="mt-1 text-xs text-muted-foreground">
-              ${item.price.toFixed(2)} each
+              ${item.price?.toFixed(2)} each
             </p>
           </div>
           <Button

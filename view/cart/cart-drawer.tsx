@@ -23,10 +23,12 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
   const { items, subtotal, total, clearCart } = useCart();
-
+console.log(items, "items")
+console.log(subtotal, "subtotal")
+console.log(total, "total") 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
+      <SheetContent className="flex w-full flex-col sm:max-w-lg py-10">
         <SheetHeader className="px-1">
           <SheetTitle className="flex items-center justify-between">
             <span>Shopping Cart</span>
