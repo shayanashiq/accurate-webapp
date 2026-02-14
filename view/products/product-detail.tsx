@@ -221,22 +221,6 @@ export default function ProductDetail() {
             </Button>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Truck className="h-4 w-4 text-muted-foreground" />
-              <span>Free shipping</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-muted-foreground" />
-              <span>2 year warranty</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <RotateCcw className="h-4 w-4 text-muted-foreground" />
-              <span>30-day returns</span>
-            </div>
-          </div>
-
           <Separator />
 
           {/* Warehouse Stock */}

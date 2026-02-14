@@ -13,6 +13,8 @@ export function useCart() {
     getTotalItems,
     getSubtotal,
     getTotal,
+    isCartOpen,        // ✅ Add this
+    setIsCartOpen,     // ✅ Add this
   } = useCartStore();
 
   const addToCart = (product: Product, quantity: number = 1) => { 
@@ -28,6 +30,9 @@ export function useCart() {
     };
     console.log(cartItem, "cartItemcheckprice")
     addItem(cartItem);
+    
+    // ✅ Open cart drawer when item is added
+    setIsCartOpen(true);
   };
 
   const cartCount = useMemo(() => getTotalItems(), [items]);
@@ -43,5 +48,8 @@ export function useCart() {
     removeItem,
     updateQuantity,
     clearCart,
+    isCartOpen,        // ✅ Add this
+    setIsCartOpen,     // ✅ Add this
+    openCart: () => setIsCartOpen(true),  // ✅ Helper function
   };
 }

@@ -4,6 +4,8 @@ import { persist } from 'zustand/middleware';
 
 interface CartStore {
   items: any[];
+  isCartOpen: boolean;  // ✅ Add this
+  
   addItem: (item: any) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -11,12 +13,14 @@ interface CartStore {
   getTotalItems: () => number;
   getSubtotal: () => number;
   getTotal: () => number;
+  setIsCartOpen: (open: boolean) => void;  // ✅ Add this
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      isCartOpen: false,  // ✅ Add this
 
       addItem: (newItem) => {
         const { items } = get();
@@ -86,9 +90,15 @@ export const useCartStore = create<CartStore>()(
         const { getSubtotal } = get();
         return getSubtotal(); // Add tax/shipping here if needed
       },
+
+      setIsCartOpen: (open) => set({ isCartOpen: open }),  // ✅ Add this
     }),
     {
       name: 'cart-storage',
+      partialize: (state) => ({ 
+        items: state.items 
+        // ✅ Only persist items, NOT isCartOpen (drawer should be closed on page reload)
+      }),
     }
   )
 );

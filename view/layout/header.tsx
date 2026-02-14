@@ -2,17 +2,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { ShoppingCart, User, Search, Menu } from 'lucide-react';
+import { ShoppingCart, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { CartDrawer } from '@/view/cart/cart-drawer';
@@ -20,8 +12,7 @@ import { siteConfig } from '@/config/site';
 import Maxwidth from '@/components/Maxwidth';
 
 export function Header() {
-  const { cartCount } = useCart();
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { cartCount, isCartOpen, setIsCartOpen } = useCart();  // ✅ Use from store
 
   return (
     <>
@@ -69,6 +60,7 @@ export function Header() {
               </Link>
             </nav>
           </div>
+
           {/* Right section - Actions */}
           <div className="flex items-center gap-2">
             {/* Cart */}
