@@ -2,13 +2,18 @@
 import { accurateFetch } from '@/lib/accurate';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log('📦 Fetching products with images...');
+    // Get pagination params from query string
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const pageSize = parseInt(searchParams.get('pageSize') || '20');
 
-    // Fetch products with image URLs and detailed fields
+    console.log(`📦 Fetching products - Page ${page}, Size ${pageSize}...`);
+
+    // Fetch products with pagination
     const response = await accurateFetch(
-      '/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,unit1Name,category,image,imageUrlThumb'
+      `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,unit1Name,category,image,imageUrlThumb&sp.page=${page}&sp.pageSize=${pageSize}`
     );
 
     console.log('✅ Products fetched successfully');
@@ -16,7 +21,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
+      page,
+      pageSize,
       count: response.d?.length || 0,
+      totalCount: response.totalCount || response.sp?.rowCount || 0,
       products: response.d || [],
     });
   } catch (err: any) {
