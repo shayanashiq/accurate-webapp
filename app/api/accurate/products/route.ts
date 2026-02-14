@@ -11,9 +11,10 @@ export async function GET(request: Request) {
 
     console.log(`📦 Fetching products - Page ${page}, Size ${pageSize}...`);
 
-    // Fetch products with pagination
+    // Fetch products with pagination and stock fields
     const response = await accurateFetch(
-      `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,unit1Name,category,image,imageUrlThumb&sp.page=${page}&sp.pageSize=${pageSize}`
+      `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,minimumSellingQuantity,unit1Name,balance,availableToSell,itemTypeName,balanceInUnit,availableToSellInAllUnit,onSales,controlQuantity&sp.page=${page}&sp.pageSize=${pageSize}`
+      // `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,itemCategory,minimumSellingQuantity,unit1Name,balance,upcNo,availableToSell,itemTypeName,balanceInUnit,availableToSellInAllUnit,onSales,controlQuantity&sp.page=${page}&sp.pageSize=${pageSize}`
     );
 
     console.log('✅ Products fetched successfully');
