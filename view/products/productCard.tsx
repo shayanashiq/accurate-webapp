@@ -32,7 +32,7 @@ console.log(product.image, "product.image")
       "group relative overflow-hidden transition-all hover:shadow-lg",
       variant === 'compact' && "flex flex-col"
     )}>
-      <Link href={`/product/${product.id}`} className="absolute inset-0 z-10">
+      <Link href={`/product-detail?id=${product.id}`} className="absolute inset-0 z-10">
         <span className="sr-only">View {product.name}</span>
       </Link>
 
@@ -92,7 +92,7 @@ console.log(product.image, "product.image")
             Add to Cart
           </Button>
           <Button size="sm" variant="ghost" className="px-3" asChild>
-            <Link href={`/product/${product.id}`} onClick={(e) => e.stopPropagation()}>
+            <Link href={`/product-detail?id=${product.id}`} onClick={(e) => e.stopPropagation()}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
