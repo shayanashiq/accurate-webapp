@@ -4,18 +4,25 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   try {
-    // Get pagination params from query string
+    // Get pagination and search params from query string
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
+    const search = searchParams.get('search') || '';
 
-    console.log(`📦 Fetching products - Page ${page}, Size ${pageSize}...`);
+    console.log(`📦 Fetching products - Page ${page}, Size ${pageSize}, Search: "${search}"...`);
 
-    // Fetch products with pagination and stock fields
-    const response = await accurateFetch(
-      `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,minimumSellingQuantity,unit1Name,balance,availableToSell,itemTypeName,balanceInUnit,availableToSellInAllUnit,onSales,controlQuantity&sp.page=${page}&sp.pageSize=${pageSize}`
-      // `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,itemCategory,minimumSellingQuantity,unit1Name,balance,upcNo,availableToSell,itemTypeName,balanceInUnit,availableToSellInAllUnit,onSales,controlQuantity&sp.page=${page}&sp.pageSize=${pageSize}`
-    );
+    // Build URL with pagination and stock fields
+    let url = `/accurate/api/item/list.do?fields=id,name,no,itemType,unitPrice,minimumSellingQuantity,unit1Name,balance,availableToSell,itemTypeName,balanceInUnit,availableToSellInAllUnit,onSales,controlQuantity&sp.page=${page}&sp.pageSize=${pageSize}`;
+    
+    // Add search filter if provided
+    if (search) {
+      // Use CONTAIN operator for partial matching
+      url += `&filter.keywords.op=CONTAIN&filter.keywords.val=${encodeURIComponent(search)}`;
+    }
+
+    // Fetch products
+    const response = await accurateFetch(url);
 
     console.log('✅ Products fetched successfully');
     console.log('📊 Sample product:', response.d?.[0]);
@@ -24,6 +31,7 @@ export async function GET(request: Request) {
       success: true,
       page,
       pageSize,
+      search,
       count: response.d?.length || 0,
       totalCount: response.totalCount || response.sp?.rowCount || 0,
       products: response.d || [],
