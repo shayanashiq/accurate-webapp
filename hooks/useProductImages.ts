@@ -28,13 +28,11 @@ async function fetchProductImages(productIds: (string | number)[]) {
   // Transform URLs to use our proxy API (API 2)
   const transformedData = (data.data || []).map((item: any) => ({
     productId: item.productId,
-    image: item.images?.[0]?.filename
-      ? transformToProxyUrl(item.images[0].filename)
-      : null,
+    image: item.images?.[0]?.fileName ? item.images[0].fileName : null,
     // images: (item.images || []).map((img: any) => ({
     //   ...img,
     //   // Convert full URLs to proxy URLs
-    //   filename: img.filename ? transformToProxyUrl(img.filename) : null,
+    //   fileName: img.fileName ? transformToProxyUrl(img.fileName) : null,
     //   thumbnailPath: img.thumbnailPath ? transformToProxyUrl(img.thumbnailPath) : null,
     // })),
     // First image thumbnail for product card
@@ -42,9 +40,8 @@ async function fetchProductImages(productIds: (string | number)[]) {
     //   ? transformToProxyUrl(item.images[0].thumbnailPath)
     //   : null,
   }));
-console.log(transformedData, "transformedData")
+  console.log(transformedData, 'transformedData');
   return transformedData;
-  
 }
 
 // API 2: GET /api/accurate/images/[...path]
