@@ -16,7 +16,10 @@ interface ProductCardProps {
   variant?: 'default' | 'compact';
 }
 
-export function ProductCard({ product, variant = 'default' }: ProductCardProps) {
+export function ProductCard({
+  product,
+  variant = 'default',
+}: ProductCardProps) {
   const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -26,13 +29,18 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   };
 
   const isOutOfStock = product.availableToSell === 0;
-console.log(product.image, "product.image")
+  console.log(product.image, 'product.image');
   return (
-    <Card className={cn(
-      "group relative overflow-hidden transition-all hover:shadow-lg",
-      variant === 'compact' && "flex flex-col"
-    )}>
-      <Link href={`/product-detail?id=${product.id}`} className="absolute inset-0 z-10">
+    <Card
+      className={cn(
+        'group relative overflow-hidden transition-all hover:shadow-lg',
+        variant === 'compact' && 'flex flex-col'
+      )}
+    >
+      <Link
+        href={`/product-detail?id=${product.id}`}
+        className="absolute inset-0 z-10"
+      >
         <span className="sr-only">View {product.name}</span>
       </Link>
 
@@ -73,8 +81,8 @@ console.log(product.image, "product.image")
           <span className="text-lg font-bold">
             ${product.unitPrice.toFixed(2)}
           </span>
-          <span className="text-xs text-muted-foreground">
-            per {product.unit1Name}
+          <span className="text-xs text-muted-foreground bg-gray-800 rounded-full px-2 py-1">
+            Available {product.availableToSell}
           </span>
         </div>
       </CardContent>
@@ -92,7 +100,10 @@ console.log(product.image, "product.image")
             Add to Cart
           </Button>
           <Button size="sm" variant="ghost" className="px-3" asChild>
-            <Link href={`/product-detail?id=${product.id}`} onClick={(e) => e.stopPropagation()}>
+            <Link
+              href={`/product-detail?id=${product.id}`}
+              onClick={(e) => e.stopPropagation()}
+            >
               <Eye className="h-4 w-4" />
             </Link>
           </Button>

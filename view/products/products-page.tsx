@@ -15,11 +15,13 @@ export function ProductsPage() {
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
   const [productsWithImages, setProductsWithImages] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
 
   // Use pagination hook
   const { page, pageSize, setPage, setPageSize, totalPages, paginationParams } =
     usePagination({
       initialPageSize: 12,
+      totalItems: totalItems,
     });
 
   const { data, isLoading: productsLoading } = useProducts(
@@ -27,8 +29,13 @@ export function ProductsPage() {
     paginationParams
   );
 
+  useEffect(() => {
+    const totalItems = data?.totalCount || 0;
+    setTotalItems(totalItems);
+  }, [data?.totalCount]);
+
   const products = data?.products || [];
-  const totalItems = data?.totalCount || 0; // ✅ totalCount use karo
+  // ✅ totalCount use karo
   // const currentPageItems = data?.count || 0; // Optional: for info
 
   // Get product IDs from current page
@@ -65,7 +72,7 @@ export function ProductsPage() {
     }
   }, [products, imagesData]);
 
-  console.log(productsWithImages, "productsWithImages")
+  console.log(productsWithImages, 'productsWithImages');
   const isLoading = productsLoading || imagesLoading;
 
   return (
