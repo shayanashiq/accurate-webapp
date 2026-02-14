@@ -1,9 +1,79 @@
-//app/api/accurate/products/images/route.ts
+// app/api/accurate/products/images/route.ts
 import { accurateFetch } from '@/lib/accurate';
 import { NextResponse } from 'next/server';
 
-// Get the base URL from environment or construct it
-const ACCURATE_BASE_URL = process.env.ACCURATE_BASE_URL || 'https://zeus.accurate.id';
+async function fetchImagesInBatches(
+  productIds: (string | number)[],
+  batchSize = 6
+) {
+  const results = [];
+
+  for (let i = 0; i < productIds.length; i += batchSize) {
+    const batch = productIds.slice(i, i + batchSize);
+
+    console.log(
+      `📦 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+        productIds.length / batchSize
+      )}`
+    );
+
+    const batchResults = await Promise.all(
+      batch.map(async (id) => {
+        try {
+          const detailRes = await accurateFetch(
+            `/accurate/api/item/detail.do?id=${id}`
+          );
+
+          return {
+            productId: id,
+            images:
+              detailRes.d?.detailItemImage?.map((img: any) => ({
+                id: img.id,
+                // Use proxy URL for authenticated access
+                fileName: img.fileName
+                  ? `/api/accurate/image?path=${encodeURIComponent(
+                      img.fileName
+                    )}`
+                  : null,
+                thumbnailPath: img.thumbnailPath
+                  ? `/api/accurate/image?path=${encodeURIComponent(
+                      img.thumbnailPath
+                    )}`
+                  : null,
+                originalName: img.originalName,
+                seq: img.seq,
+              })) || [],
+            thumbnail: detailRes.d?.detailItemImage?.[0]?.thumbnailPath
+              ? `/api/accurate/image?path=${encodeURIComponent(
+                  detailRes.d.detailItemImage[0].thumbnailPath
+                )}`
+              : null,
+          };
+        } catch (err: any) {
+          console.error(
+            `❌ Failed to fetch image for product ${id}:`,
+            err.message
+          );
+          return {
+            productId: id,
+            images: [],
+            thumbnail: null,
+            error: err.message,
+          };
+        }
+      })
+    );
+
+    results.push(...batchResults);
+
+    // Wait 1 second between batches
+    if (i + batchSize < productIds.length) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  return results;
+}
 
 export async function POST(request: Request) {
   try {
@@ -18,30 +88,13 @@ export async function POST(request: Request) {
 
     console.log(`🖼️  Fetching images for ${productIds.length} products...`);
 
-    const imagePromises = productIds.map((id: string | number) =>
-      accurateFetch(`/accurate/api/item/detail.do?id=${id}`)
-        .then(detailRes => ({
-          productId: id,
-          images: detailRes.d?.detailItemImage?.map((img: any) => ({
-            id: img.id,
-            fileName: img.fileName ? `${ACCURATE_BASE_URL}${img.fileName}` : null,
-            thumbnailPath: img.thumbnailPath ? `${ACCURATE_BASE_URL}${img.thumbnailPath}` : null,
-            originalName: img.originalName,
-            seq: img.seq,
-          })) || [],
-          thumbnail: detailRes.d?.detailItemImage?.[0]?.thumbnailPath 
-            ? `${ACCURATE_BASE_URL}${detailRes.d.detailItemImage[0].thumbnailPath}` 
-            : null,
-        }))
-        .catch(err => ({
-          productId: id,
-          images: [],
-          thumbnail: null,
-          error: err.message,
-        }))
-    );
+    const imagesData = await fetchImagesInBatches(productIds);
 
-    const imagesData = await Promise.all(imagePromises);
+    console.log(
+      `✅ Successfully fetched images for ${
+        imagesData.filter((d) => !d.error).length
+      }/${productIds.length} products`
+    );
 
     return NextResponse.json({
       success: true,
