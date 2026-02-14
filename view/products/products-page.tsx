@@ -6,13 +6,15 @@ import { useProducts } from '@/hooks/useProducts';
 import { ProductGrid } from '@/view/products/productGrid';
 import { ProductSearch } from '@/view/products/product-search';
 import { Pagination } from '@/components/ui/pagination';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Maxwidth from '@/components/Maxwidth';
 import { usePagination } from '@/hooks/usePagination';
+import { useProductImages } from '@/hooks/useProductImages';
 
 export function ProductsPage() {
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
+  const [productsWithImages, setProductsWithImages] = useState([]);
 
   // Use pagination hook
   const { page, pageSize, setPage, setPageSize, totalPages, paginationParams } =
@@ -20,11 +22,51 @@ export function ProductsPage() {
       initialPageSize: 12,
     });
 
-  const { data, isLoading } = useProducts(search, paginationParams);
+  const { data, isLoading: productsLoading } = useProducts(
+    search,
+    paginationParams
+  );
 
-  const products = data?.products || []; 
+  const products = data?.products || [];
   const totalItems = data?.totalCount || 0; // ✅ totalCount use karo
-  // const currentPageItems = data?.count || 0; // Optional: for info 
+  // const currentPageItems = data?.count || 0; // Optional: for info
+
+  // Get product IDs from current page
+  const productIds = useMemo(
+    () => products.map((p: any) => p.id).filter(Boolean),
+    [products]
+  );
+
+  // API 2: Fetch images for these products (no pagination)
+  const { data: imagesData, isLoading: imagesLoading } =
+    useProductImages(productIds);
+  console.log(imagesData, 'imagesData');
+
+  // ✅ Simple merge - bas id compare karo aur image add karo
+  useEffect(() => {
+    if (!products.length) return;
+
+    if (imagesData?.length) {
+      // Simple object banao id ke saath
+      const imageMap: any = {};
+      imagesData.forEach((item: any) => {
+        imageMap[item.productId] = item.image; // Sirf image store karo
+      });
+
+      // Products mein image add karo
+      const updated = products.map((product: any) => ({
+        ...product,
+        image: imageMap[product.id] || null, // ✅ id compare karke image add ki
+      }));
+
+      setProductsWithImages(updated);
+    } else {
+      setProductsWithImages(products);
+    }
+  }, [products, imagesData]);
+
+  console.log(productsWithImages, "productsWithImages")
+  const isLoading = productsLoading || imagesLoading;
 
   return (
     <Maxwidth className="py-8 space-y-8">
@@ -45,7 +87,8 @@ export function ProductsPage() {
       </div>
 
       {/* Products Grid */}
-      <ProductGrid products={products} isLoading={isLoading} />
+      {/* <ProductGrid products={products} isLoading={isLoading} /> */}
+      <ProductGrid products={productsWithImages} isLoading={isLoading} />
 
       <Pagination
         currentPage={page}

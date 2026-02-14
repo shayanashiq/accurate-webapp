@@ -37,9 +37,9 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
       </Link>
 
       <div className="relative aspect-square overflow-hidden bg-muted">
-        {product.imageUrlThumb ? (
+        {product.image ? (
           <Image
-            src={product.imageUrlThumb}
+            src={product.image}
             alt={product.name}
             fill
             className="object-cover transition-transform group-hover:scale-105"

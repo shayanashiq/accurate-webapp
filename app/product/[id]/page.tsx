@@ -8,7 +8,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const { data, isLoading, error } = useProductDetail(id);
-  const product = data.data;
+  const product = data?.data;
   return (
     <ProductDetail
       product={product}
