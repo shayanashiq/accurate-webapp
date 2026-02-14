@@ -43,7 +43,7 @@ export function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Orders</h1>
-        <div className="grid gap-4 sm:grid-cols-3">
+        {/* <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="" className="text-xs text-white/80">
               Start Date
@@ -101,7 +101,7 @@ export function OrdersPage() {
               }}
             />
           </div>
-        </div>
+        </div> */}
         <Button asChild>
           <Link href="/">
             <Plus className="mr-2 h-4 w-4" />
