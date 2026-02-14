@@ -31,7 +31,7 @@ interface UsePaginationReturn {
   // For API
   paginationParams: {
     page: number;
-    limit: number;
+    pageSize: number;
     offset: number;
   };
 }
@@ -123,7 +123,7 @@ export function usePagination({
     // For API calls
     paginationParams: {
       page: safePage,
-      limit: pageSize,
+      pageSize: pageSize,
       offset: startIndex,
     },
   };

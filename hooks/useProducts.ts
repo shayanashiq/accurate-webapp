@@ -4,14 +4,14 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 interface PaginationParams {
   page: number;
-  limit: number;
+  pageSize: number;
   offset?: number;
 }
 
 async function fetchProducts(params: PaginationParams, search?: string) {
   const urlParams = new URLSearchParams({
     page: params.page.toString(),
-    limit: params.limit.toString(),
+    pageSize: params.pageSize.toString(),
   });
 
   if (search) {
@@ -38,7 +38,7 @@ export function useProducts(
       'products',
       debouncedSearch,
       paginationParams.page,
-      paginationParams.limit,
+      paginationParams.pageSize,
     ],
     queryFn: () => fetchProducts(paginationParams, debouncedSearch),
     placeholderData: (previousData) => previousData,

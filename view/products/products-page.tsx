@@ -22,8 +22,9 @@ export function ProductsPage() {
 
   const { data, isLoading } = useProducts(search, paginationParams);
 
-  const products = data?.products || [];
-  const totalItems = data?.count || 0;
+  const products = data?.products || []; 
+  const totalItems = data?.totalCount || 0; // ✅ totalCount use karo
+  // const currentPageItems = data?.count || 0; // Optional: for info 
 
   return (
     <Maxwidth className="py-8 space-y-8">

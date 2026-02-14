@@ -5,7 +5,7 @@ import { queryClient } from '@/components/ReactQueryProvider';
 async function fetchOrders(params: any) {
   const urlParams = new URLSearchParams({
     page: params.page.toString(),
-    limit: params.limit.toString(),
+    pageSize: params.pageSize.toString(),
   });
 
   if (params.customerId) {
@@ -43,7 +43,7 @@ export function useOrders(paginationParams: any, filters: any) {
     queryKey: [
       'orders',
       paginationParams.page,
-      paginationParams.limit,
+      paginationParams.pageSize,
       filters,
     ],
     queryFn: () => fetchOrders({ ...paginationParams, ...filters }),

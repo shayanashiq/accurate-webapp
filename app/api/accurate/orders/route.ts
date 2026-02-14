@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const pageSize = parseInt(searchParams.get('pageSize') || '20');
     const customerNo = searchParams.get('customerNo');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const queryParams = new URLSearchParams({
       fields: 'id,number,transDate,customer,total,status',
       'sp.page': String(page),
-      'sp.pageSize': String(limit),
+      'sp.pageSize': String(pageSize),
     });
 
     // Add filters if provided
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       data: listResponse.d || [],
       pagination: listResponse.sp || {
         page,
-        pageSize: limit,
+        pageSize: pageSize,
         pageCount: 1,
         rowCount: 0,
       },
