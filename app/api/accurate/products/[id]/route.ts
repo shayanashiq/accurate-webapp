@@ -90,15 +90,25 @@ export async function GET(
       // Notes & Description
       notes: itemData.notes || null,
 
-      // Images
+      // Images - NOW PROXIED
       images:
         itemData.detailItemImage?.map((img: any) => ({
           id: img.id || null,
-          fileName: img.fileName || null,
-          thumbnailPath: img.thumbnailPath || null,
+          // Proxy the image URLs through our authenticated endpoint
+          fileName: img.fileName 
+            ? `/api/accurate/image?path=${encodeURIComponent(img.fileName)}`
+            : null,
+          thumbnailPath: img.thumbnailPath 
+            ? `/api/accurate/image?path=${encodeURIComponent(img.thumbnailPath)}`
+            : null,
           originalName: img.originalName || null,
           seq: img.seq || 0,
         })) || [],
+
+      // Primary thumbnail for product card
+      thumbnail: itemData.detailItemImage?.[0]?.thumbnailPath
+        ? `/api/accurate/image?path=${encodeURIComponent(itemData.detailItemImage[0].thumbnailPath)}`
+        : null,
 
       // Selling Prices (by branch/category)
       sellingPrices:
