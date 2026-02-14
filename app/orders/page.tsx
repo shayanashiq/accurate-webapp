@@ -1,7 +1,9 @@
-// app/(store)/orders/page.tsx
+// app/orders/page.tsx
 
-import { OrderList } from '@/view/orders/order-list';
+import { OrdersPage } from '@/view/orders/orders-page';
 
-export default function OrdersPage() {
-  return <OrderList />;
-}
+const page = () => {
+  return <OrdersPage />;
+};
+
+export default page;
