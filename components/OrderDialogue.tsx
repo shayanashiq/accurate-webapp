@@ -1,7 +1,7 @@
 // components/OrderDialog.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { useTableStore } from '@/store/tableStore';
 
 interface OrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (customerName: string) => Promise<void>;
+  onConfirm: (customerName: string, tableNumber: string) => Promise<void>;
   totalAmount: number;
 }
 
@@ -28,8 +29,18 @@ export function OrderDialog({
   onConfirm,
   totalAmount,
 }: OrderDialogProps) {
+  const { tableNumber: storedTableNumber, setTableNumber: saveTableNumber } = useTableStore();
   const [customerName, setCustomerName] = useState('');
+  const [tableNumber, setTableNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load stored table number when dialog opens
+  useEffect(() => {
+    if (open && storedTableNumber) {
+      setTableNumber(storedTableNumber);
+      console.log('📋 Auto-filled table number from storage:', storedTableNumber);
+    }
+  }, [open, storedTableNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +51,15 @@ export function OrderDialog({
 
     setIsLoading(true);
     try {
-      await onConfirm(customerName);
+      // Save table number to store for future use
+      if (tableNumber.trim()) {
+        saveTableNumber(tableNumber.trim());
+        console.log('💾 Saved table number:', tableNumber.trim());
+      }
+
+      await onConfirm(customerName, tableNumber.trim());
+      
+      // Clear customer name but keep table number for next order
       setCustomerName('');
     } catch (error) {
       console.error('Order failed:', error);
@@ -55,7 +74,7 @@ export function OrderDialog({
         <DialogHeader>
           <DialogTitle>Complete Your Order</DialogTitle>
           <DialogDescription>
-            Enter your name to proceed with payment of Rp{totalAmount.toLocaleString('id-ID')}
+            Enter your details to proceed with payment of Rp{totalAmount.toLocaleString('id-ID')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -69,14 +88,38 @@ export function OrderDialog({
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
                 disabled={isLoading}
+                autoFocus
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="table">Table Number</Label>
+              <Input
+                id="table"
+                placeholder="e.g., 4"
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                disabled={isLoading}
+              />
+              {storedTableNumber && (
+                <p className="text-xs text-muted-foreground">
+                  ✓ Auto-filled from URL. You can edit if needed.
+                </p>
+              )}
+              {!storedTableNumber && (
+                <p className="text-xs text-muted-foreground">
+                  Leave empty if ordering for takeaway
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                setCustomerName('');
+                onOpenChange(false);
+              }}
               disabled={isLoading}
             >
               Cancel

@@ -124,22 +124,13 @@ export async function POST(request: Request) {
     const transactionStatus = notification.transaction_status;
     const fraudStatus = notification.fraud_status;
 
-    console.log('💳 Transaction Status:', transactionStatus);
-    console.log('🔍 Fraud Status:', fraudStatus);
-
     // Handle payment success
     if (transactionStatus === 'capture' || transactionStatus === 'settlement') {
       if (fraudStatus === 'accept' || !fraudStatus) {
         console.log('✅ Payment successful! Creating order in Accurate...');
 
-        // Get order data from your database or session
-        // For now, we'll extract from orderId
-        // Format: ORDER-timestamp
-        
-        // You'll need to store this data when creating the transaction
-        // For demo, we'll use dummy data
-        const customerName = 'Customer'; // Get from your database
-        const items = []; // Get from your database
+        const customerName = 'Customer';
+        const items:any[] = [];
 
         const result = await createCustomerAndOrder(
           customerName,

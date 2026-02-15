@@ -38,7 +38,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
   const totalInIDR = Math.round(total * 15000);
 
-  const handlePlaceOrder = async (customerName: string) => {
+  const handlePlaceOrder = async (customerName: string, tableNumber: string) => {
     try {
       const orderId = `ORDER-${Date.now()}`;
 
@@ -46,6 +46,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
       const orderData = {
         orderId,
         customerName,
+        tableNumber: tableNumber || null,
         items: items.map((item) => ({
           productId: item.productId,
           productNo: item.productNo,
@@ -57,6 +58,8 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
       };
 
       localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+
+      console.log('📦 Creating transaction with table:', tableNumber);
 
       // Create Midtrans transaction
       const response = await fetch('/api/payment/create-transaction', {
@@ -107,7 +110,14 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 toast.success('Order placed successfully!');
                 clearCart();
                 localStorage.removeItem('pendingOrder');
-                router.push(`/payment/success?order_id=${orderId}&accurate_order=${placeOrderData.data.orderNumber}`);
+                
+                const successUrl = new URLSearchParams({
+                  order_id: orderId,
+                  accurate_order: placeOrderData.data.orderNumber,
+                  ...(tableNumber && { table: tableNumber }),
+                });
+
+                router.push(`/payment/success?${successUrl.toString()}`);
               } else {
                 toast.error('Payment successful but failed to create order');
                 router.push(`/payment/success?order_id=${orderId}`);
