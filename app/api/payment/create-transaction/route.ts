@@ -17,7 +17,7 @@ function getJakartaDate(): string {
 
 export async function POST(request: Request) {
   try {
-    const { orderId, customerName, items, grossAmount } = await request.json();
+    const { orderId, customerName, items, grossAmount, tableNumber } = await request.json();
 
     // Create Snap API instance
     const snap = new midtransClient.Snap({
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
         customerName,
         items,
         grossAmount,
+        tableNumber,
       },
     });
   } catch (error: any) {

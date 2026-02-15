@@ -1,6 +1,7 @@
 // app/api/payment/webhook/route.ts
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getPendingOrder } from '@/lib/orderStorage';
 
 function getJakartaDate(): string {
   const now = new Date();
@@ -18,7 +19,8 @@ function getJakartaDate(): string {
 async function createCustomerAndOrder(
   customerName: string,
   items: any[],
-  orderId: string
+  orderId: string,
+  tableNumber: string
 ) {
   try {
     const transDate = getJakartaDate();
@@ -34,9 +36,9 @@ async function createCustomerAndOrder(
         body: JSON.stringify({
           name: customerName,
           transDate: transDate,
-          customerNo: `WEB-${Date.now()}`,
-          email: 'customer@store.com',
-          mobilePhone: '081234567890',
+          // customerNo: `WEB-${Date.now()}`,
+          email: 'N/A',
+          mobilePhone: 'N/A',
         }),
       }
     );
@@ -61,7 +63,7 @@ async function createCustomerAndOrder(
         body: JSON.stringify({
           customerNo: customerNo,
           transDate: transDate,
-          description: `Web Order - ${orderId}`,
+          description: `Table No ${tableNumber} - ${orderId}`,
           detailMemo: `Payment via Midtrans - Order ID: ${orderId}`,
           items: items.map((item) => ({
             itemNo: item.productNo || item.productId,
@@ -129,12 +131,23 @@ export async function POST(request: Request) {
       if (fraudStatus === 'accept' || !fraudStatus) {
         console.log('✅ Payment successful! Creating order in Accurate...');
 
-        const customerName = 'Customer';
-        const items:any[] = [];
+        const orderData = await getPendingOrder(orderId);
 
+        if (!orderData) {
+          console.error('❌ Order not found:', orderId);
+          return NextResponse.json(
+            { success: false, error: 'Order not found' },
+            { status: 404 }
+          );
+        }
+
+        console.log('📦 Found order for table:', orderData.tableNumber || 'Takeaway');
+
+        // ✅ Create order in Accurate with all the data
         const result = await createCustomerAndOrder(
-          customerName,
-          items,
+          orderData.customerName,
+          orderData.tableNumber,
+          orderData.items,
           orderId
         );
 

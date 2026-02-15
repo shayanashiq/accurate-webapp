@@ -16,12 +16,7 @@ function getJakartaDate(): string {
 
 export async function POST(request: Request) {
   try {
-    const { orderId, customerName, items, totalAmount } = await request.json();
-
-    console.log('🎯 Placing order after successful payment...');
-    console.log('Order ID:', orderId);
-    console.log('Customer:', customerName);
-    console.log('Items:', items);
+    const { orderId, customerName, items, totalAmount, tableNumber } = await request.json();
 
     const transDate = getJakartaDate();
 
@@ -52,6 +47,7 @@ export async function POST(request: Request) {
 
     // Step 2: Create Sales Order in Accurate
     console.log('📦 Step 2: Creating sales order...');
+    
 
     const orderResponse = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL}/api/accurate/orders/create`,
@@ -61,7 +57,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           customerNo: customerNo,
           transDate: transDate,
-          description: `Web Order - ${orderId}`,
+          description: `Table No ${tableNumber} - ${orderId}`,
           detailMemo: `Payment successful - Midtrans Order ID: ${orderId}`,
           items: items.map((item: any) => ({
             itemNo: String(item.productNo || item.productId),
