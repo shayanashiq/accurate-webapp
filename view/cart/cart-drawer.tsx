@@ -32,104 +32,86 @@ declare global {
 }
 
 export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
-  const { items, subtotal, total, clearCart } = useCart();
+  const { items, total, clearCart } = useCart();
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
-  const [isSnapReady, setIsSnapReady] = useState(false);
   const router = useRouter();
 
-  // Check if Snap is loaded
-  useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds max wait
-
-    const checkSnap = setInterval(() => {
-      attempts++;
-      
-      if (window.snap) {
-        console.log('✅ Snap is ready');
-        setIsSnapReady(true);
-        clearInterval(checkSnap);
-      } else if (attempts >= maxAttempts) {
-        console.error('❌ Snap failed to load after 5 seconds');
-        clearInterval(checkSnap);
-      }
-    }, 100);
-
-    return () => clearInterval(checkSnap);
-  }, []);
-
-  // Convert to Rupiah
-  const totalInIDR = Math.round(total * 15000); // Adjust conversion rate
+  const totalInIDR = Math.round(total * 15000);
 
   const handlePlaceOrder = async (customerName: string) => {
-    if (!isSnapReady || !window.snap) {
-      toast.error('Payment system is still loading. Please wait a moment.');
-      console.error('❌ Snap not ready:', { isSnapReady, snap: window.snap });
-      return;
-    }
-
-    const loadingToast = toast.loading('Creating order...');
-
     try {
       const orderId = `ORDER-${Date.now()}`;
 
-      console.log('📦 Creating transaction:', {
+      // Store order data in localStorage for payment success callback
+      const orderData = {
         orderId,
         customerName,
-        totalInIDR,
-        itemsCount: items.length,
-      });
+        items: items.map((item) => ({
+          productId: item.productId,
+          productNo: item.productNo,
+          name: item.name,
+          price: Math.round(item.price * 15000),
+          quantity: item.quantity,
+        })),
+        totalAmount: totalInIDR,
+      };
 
-      // Create transaction
+      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+
+      // Create Midtrans transaction
       const response = await fetch('/api/payment/create-transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
           customerName,
-          items: items.map((item) => ({
-            productId: item.productId,
-            name: item.name,
-            price: Math.round(item.price * 15000),
-            quantity: item.quantity,
-          })),
+          items: orderData.items,
           grossAmount: totalInIDR,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
-
-      console.log('📡 Transaction response:', data);
 
       if (!data.success) {
         throw new Error(data.error || 'Failed to create transaction');
       }
 
-      if (!data.token) {
-        throw new Error('No payment token received');
-      }
-
-      toast.dismiss(loadingToast);
-
-      // Close dialogs before opening payment
       setIsOrderDialogOpen(false);
       onOpenChange(false);
 
-      console.log('💳 Opening Midtrans Snap with token:', data.token);
-
-      // Small delay to ensure dialogs are closed
+      // Open Midtrans Snap
       setTimeout(() => {
         if (window.snap) {
           window.snap.pay(data.token, {
-            onSuccess: function (result: any) {
+            onSuccess: async function (result: any) {
               console.log('✅ Payment success:', result);
-              toast.success('Payment successful!');
-              clearCart();
-              router.push(`/payment/success?order_id=${orderId}`);
+
+              // Retrieve pending order data
+              const pendingOrder = JSON.parse(
+                localStorage.getItem('pendingOrder') || '{}'
+              );
+
+              // Create order in Accurate
+              const placeOrderResponse = await fetch(
+                '/api/payment/place-order',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(pendingOrder),
+                }
+              );
+
+              const placeOrderData = await placeOrderResponse.json();
+
+              if (placeOrderData.success) {
+                toast.success('Order placed successfully!');
+                clearCart();
+                localStorage.removeItem('pendingOrder');
+                router.push(`/payment/success?order_id=${orderId}&accurate_order=${placeOrderData.data.orderNumber}`);
+              } else {
+                toast.error('Payment successful but failed to create order');
+                router.push(`/payment/success?order_id=${orderId}`);
+              }
             },
             onPending: function (result: any) {
               console.log('⏳ Payment pending:', result);
@@ -138,17 +120,17 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
             },
             onError: function (result: any) {
               console.error('❌ Payment error:', result);
-              toast.error('Payment failed. Please try again.');
+              toast.error('Payment failed');
+              localStorage.removeItem('pendingOrder');
             },
             onClose: function () {
-              console.log('🚪 Payment popup closed');
+              console.log('🚪 Payment cancelled');
               toast('Payment cancelled', { icon: '❌' });
             },
           });
         }
       }, 300);
     } catch (error: any) {
-      toast.dismiss(loadingToast);
       console.error('❌ Order placement failed:', error);
       toast.error(error.message || 'Failed to process order');
     }
@@ -208,9 +190,8 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                     className="w-full"
                     size="lg"
                     onClick={() => setIsOrderDialogOpen(true)}
-                    disabled={!isSnapReady}
                   >
-                    {isSnapReady ? 'Place Order' : 'Loading payment system...'}
+                    {'Place Order'}
                   </Button>
                   <Button
                     variant="outline"

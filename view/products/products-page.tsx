@@ -31,6 +31,8 @@ function ProductsContent() {
   const [productsWithImages, setProductsWithImages] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
 
+  console.log(productsWithImages)
+
   const { page, pageSize, setPage, setPageSize, totalPages, paginationParams } =
     usePagination({
       initialPageSize: 12,

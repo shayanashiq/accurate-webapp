@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,10 @@ import Maxwidth from '@/components/Maxwidth';
 import confetti from 'canvas-confetti';
 
 export default function PaymentSuccessPage() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('order_id');
+  const accurateOrder = searchParams.get('accurate_order');
+
   useEffect(() => {
     confetti({
       particleCount: 100,
@@ -21,9 +26,15 @@ export default function PaymentSuccessPage() {
     <Maxwidth className="flex min-h-[60vh] flex-col items-center justify-center py-16">
       <CheckCircle className="h-20 w-20 text-green-500 mb-6" />
       <h1 className="text-3xl font-bold mb-2">Payment Successful!</h1>
-      <p className="text-muted-foreground mb-8 text-center max-w-md">
+      <p className="text-muted-foreground mb-2 text-center max-w-md">
         Thank you for your order. Your payment has been processed successfully.
       </p>
+      {accurateOrder && (
+        <div className="bg-muted p-4 rounded-lg mb-8">
+          <p className="text-sm text-muted-foreground">Order Number</p>
+          <p className="font-mono font-bold">{accurateOrder}</p>
+        </div>
+      )}
       <div className="flex gap-4">
         <Button asChild>
           <Link href="/orders">View Orders</Link>
