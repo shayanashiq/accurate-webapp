@@ -1,6 +1,7 @@
 // app/api/accurate/image/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+export const dynamic = 'force-dynamic';
 
 function generateSignature(timestamp: string, signatureSecret: string): string {
   const hmac = crypto.createHmac('sha256', signatureSecret);
@@ -47,21 +48,27 @@ export async function GET(request: NextRequest) {
 
     // Construct full image URL
     const baseUrl = process.env.ACCURATE_BASE_URL || 'https://zeus.accurate.id';
-    const imageUrl = imagePath.startsWith('http') ? imagePath : `${baseUrl}${imagePath}`;
+    const imageUrl = imagePath.startsWith('http')
+      ? imagePath
+      : `${baseUrl}${imagePath}`;
 
     console.log('🖼️  Proxying image:', imageUrl);
 
     // Fetch image with authentication
     const response = await fetch(imageUrl, {
       headers: {
-        'Authorization': `Bearer ${apiToken}`,
+        Authorization: `Bearer ${apiToken}`,
         'X-Api-Timestamp': timestamp,
         'X-Api-Signature': signature,
       },
     });
 
     if (!response.ok) {
-      console.error('❌ Image fetch failed:', response.status, response.statusText);
+      console.error(
+        '❌ Image fetch failed:',
+        response.status,
+        response.statusText
+      );
       return new NextResponse('Image not found', { status: 404 });
     }
 
@@ -73,7 +80,8 @@ export async function GET(request: NextRequest) {
     return new NextResponse(imageBuffer, {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
+        'Cache-Control':
+          'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
       },
     });
   } catch (error) {

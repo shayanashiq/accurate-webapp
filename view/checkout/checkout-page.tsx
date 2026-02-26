@@ -1,7 +1,7 @@
 // view/checkout/checkout-page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { useCreateOrder } from '@/hooks/useOrders';
@@ -72,8 +72,13 @@ export function CheckoutPage() {
   const [address, setAddress] = useState({ street: '', city: '', zip: '' });
   const [terms, setTerms] = useState(false);
 
+  useEffect(() => {
+    if (items.length === 0) {
+      router.replace('/');
+    }
+  }, [items, router]);
+
   if (items.length === 0) {
-    router.push('/');
     return null;
   }
 
